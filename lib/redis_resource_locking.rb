@@ -15,13 +15,13 @@ module RedisResourceLocking
   # the all we have to do is make sure all things that have timed out are expired before we access either list
   #   since they are all sorted by the expiry date all we need to do is expire everything that falls below the current time
 
-  TIMEOUT = 10.minutes
+  TIMEOUT = 600 # 10 minutes in seconds
 
   def lock_resource(resource_klass, resource_id, user_id, timeout=TIMEOUT)
     # expire everything first
     expire_resource(resource_klass, resource_id)
 
-    next_expiry = timeout.from_now.to_i
+    next_expiry = Time.now + timeout
     t_key = type_key(resource_klass)
     r_key = resource_key(resource_klass, resource_id)
     $redis.zadd(t_key, next_expiry, resource_id)
